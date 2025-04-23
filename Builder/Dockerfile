@@ -1,29 +1,28 @@
-# Use the official Python runtime image
-FROM python:3.13  
+# Use official Python image
+FROM python:3.13
 
-# Set the working directory inside the container
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+# Set working directory
 WORKDIR /app
 
-# Set environment variables 
-# Prevents Python from writing pyc files to disk
-ENV PYTHONDONTWRITEBYTECODE=1
-#Prevents Python from buffering stdout and stderr
-ENV PYTHONUNBUFFERED=1 
+# Copy and install dependencies
+COPY requirements.txt /app/
+RUN pip install --upgrade pip \
+    && pip install --no-cache-dir -r requirements.txt \
+    && pip install mysqlclient
 
-# Upgrade pip
-RUN pip install --upgrade pip 
-
-# Copy the Django project  and install dependencies
-COPY requirements.txt  /app/
-
-# run this command to install all dependencies 
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Copy the Django project to the container
+# Copy full Django project
 COPY . /app/
 
-# Expose the Django port
+# Copy and set permissions on the entrypoint script
+COPY entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
+
+# Expose port for Django
 EXPOSE 8000
 
-# Run Django’s development server
-# CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+# Use custom entrypoint to wait for DB, migrate, then start server
+ENTRYPOINT ["/app/entrypoint.sh"]
