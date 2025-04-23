@@ -1,3 +1,5 @@
+#!/bin/sh
+
 echo "🚀 Running migrations..."
 python manage.py migrate admin auth contenttypes sessions socialaccount account
 python manage.py migrate
